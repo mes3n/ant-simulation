@@ -3,13 +3,14 @@
 
 
 sf::RenderWindow window;
-ant ants[ANT_POPULATION];
+Ant ants[ANT_POPULATION];
+AntNest antNest;
 
 
 int main () {
 
     GUI::init();
-    ANT::initAnts();
+    ANT::init(sf::Vector2f(WIDTH/2, HEIGTH/2));
 
     while (window.isOpen()) {
 
