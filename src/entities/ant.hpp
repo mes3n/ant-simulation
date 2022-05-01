@@ -5,42 +5,69 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 
-const int ANT_POPULATION = 4;
+const int ANT_POPULATION = 100;
+const int N_FAMILIAR_POINTS = 30;
 
-
-class ant {
+class Ant {
     // the ants follow a set of simplified rules
-    // they forage around chaotically looking for food
-    // they must return to their nest to preserve energy
-    //
+    //  - they forage around chaotically looking for food
+    //  - they must return to their nest to get energy and store food
+    //  - they can rembember their surroundings for later navigation
     private:
         int energy;  // make sure ant has enough energy to surive
-        int food;  // if it is carrying food, head home and place phermones
+        int hasFood;  // if it is carrying food, head home and place phermones
 
-    public:
+        // the ant uses familiarPoints to navigate home
+        sf::Vector2f familiarPoints[N_FAMILIAR_POINTS];  // points the ant recognizes
+        int destinationPointIndex;  // the point the ant is heading to
+        int familiarRadius;
+
         // positional values of the ant
         sf::Vector2f coordinates;
         sf::Vector2f velocity;
 
-        // the ants visual representation
-        sf::CircleShape entity;
-
-        void init (void);
-
-        void move (void);
-
         void setVelocity ();
+
+        void addFamiliarPoint ();
+
+        int nearestPoint (int);
+
+    public:
+        sf::CircleShape entity;  // the ants visual representation
+
+        void init (sf::Vector2f);
+
+        void move (void);  // add delta time
+
 
 };
 
-extern ant ants[ANT_POPULATION];
+
+class AntNest {
+    private:
+        int radius;  // size of the actual ant home
+
+    public:
+        sf::Vector2f coordinates;  // coordinates for the center of the home
+        sf::CircleShape entity;  // the viua representation
+
+        void init (sf::Vector2f);
+};
+
+
+extern Ant ants[ANT_POPULATION];
+
+extern AntNest antNest;
+
 
 namespace ANT {
 
-    void initAnts (void);
+    void init (sf::Vector2f);
 
     void moveAnts (void);
 };
+
+
 
 
 #endif // ANT_H
