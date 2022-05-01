@@ -62,6 +62,7 @@ void GUI::update (void) {
     for (unsigned int i = 0; i < ANT_POPULATION; i++) {
         window.draw(ants[i].entity);
     }
+    window.draw(antHome.entity);
 
     window.display();
 }

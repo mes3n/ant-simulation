@@ -10,7 +10,7 @@ const int HEIGTH = 1000;
 extern sf::RenderWindow window;
 
 namespace GUI {
-    
+
     void init(void);
 
     void events(void);
