@@ -2,21 +2,20 @@
 
 CC = g++
 MYDIR = .
-objCFLAGS = -Wextra -g -fmax-errors=10
-binCFLAGS = -Wall -g -lsfml-graphics -lsfml-window -lsfml-system
+SRC_DIR = $(MYDIR)/src
+OBJ_DIR = $(MYDIR)/obj
+CFLAGS = -Wall -g
+LDFLAGS = -Wall -g -lsfml-graphics -lsfml-window -lsfml-system  # link these files
 
-# ****************************************************
-# Targets needed to bring the executable up to date
+# create list of object files from source files but replace ".cpp" and "src"
+OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/*/*.cpp))
 
-main: main.o graphics.o ant.o
-	$(CC) $(binCFLAGS) -o bin/main obj/main.o obj/graphics.o obj/entities/ant.o
+# all:
+# 	@echo $(SRC_FILES)
+# 	@echo $(OBJ_FILES)
 
+main: $(OBJ_FILES)
+	$(CC) $(LDFLAGS) -o bin/$@ $^
 
-graphics.o:
-	$(CC) $(objCFLAGS) -o obj/graphics.o -c src/graphics.cpp
-
-ant.o:
-	$(CC) $(objCFLAGS) -o obj/entities/ant.o -c src/entities/ant.cpp
-
-main.o:
-	$(CC) $(objCFLAGS) -o obj/main.o -c src/main.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
