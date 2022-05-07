@@ -6,7 +6,6 @@ sf::RenderWindow window;
 Ant ants[ANT_POPULATION];
 AntNest antNest;
 
-
 int main () {
 
     GUI::init();
