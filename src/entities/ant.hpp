@@ -5,7 +5,7 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 
-const int ANT_POPULATION = 100;
+const int ANT_POPULATION = 2000;
 const int N_FAMILIAR_POINTS = 30;
 
 class Ant {
@@ -14,6 +14,8 @@ class Ant {
     //  - they must return to their nest to get energy and store food
     //  - they can rembember their surroundings for later navigation
     private:
+        int index;  // the ants "name"
+
         int energy;  // make sure ant has enough energy to surive
         int hasFood;  // if it is carrying food, head home and place phermones
 
@@ -35,7 +37,7 @@ class Ant {
     public:
         sf::CircleShape entity;  // the ants visual representation
 
-        void init (sf::Vector2f);
+        void init (sf::Vector2f, int);
 
         void move (void);  // add delta time
 
