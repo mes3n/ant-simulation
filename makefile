@@ -7,7 +7,7 @@ OBJ_DIR = $(MYDIR)/obj
 # FILE = # should be set from terminal  # not really useful :(
 # SRC_FILE = $(SRC_DIR)/$(FILE).cpp
 # OBJ_FILE = $(OBJ_DIR)/$(FILE).o
-CFLAGS = -Wall -g -Wno-unused-variable
+CFLAGS = -Wall -g
 LDFLAGS = -Wall -g -lsfml-graphics -lsfml-window -lsfml-system# link these
 
 # create list of object files from source files but replace ".cpp" and "src"
