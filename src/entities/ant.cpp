@@ -11,17 +11,17 @@ void Ant::init (sf::Vector2f center, int i) {
     float theta = rotation(generator) * 12;  // convert pi/12 to pi radians
     velocity = sf::Vector2f(cos(theta), sin(theta));
 
-    energy = 60 * 10;
+    energy = 60 * 20;
     hasFood = 0;
 
     familiarPoints[0] = center;
     for (unsigned int i = 1; i < N_FAMILIAR_POINTS; i++) {
         familiarPoints[i] = sf::Vector2f(-1, -1);
     }
-    destinationPointIndex = N_FAMILIAR_POINTS - 1;
+    destinationPointIndex = N_FAMILIAR_POINTS - 1;  // end of familiarPoints
     familiarRadius = 75;
 
-    entity.setRadius(3);
+    entity.setRadius(0.5);
     entity.setPosition(coordinates.x - 3, coordinates.y - 3);
     entity.setFillColor(sf::Color::Black);
 
@@ -45,14 +45,13 @@ void Ant::move (void) {
 
 void Ant::setVelocity () {
     float theta = rotation(generator);  // roatation between +-pi/12 radians
-    int energyLowLimit = 60*6;
+    int energyLowLimit = 60 * 12;  // energy left when heading home (60 fps * seconds)
 
     if (energy > energyLowLimit) {  // move around chaotically
         velocity = rotate(velocity, theta);  // rotate movement by theta radians
     }
     else if (energy == energyLowLimit) {  // start moving home
         destinationPointIndex = nearestPoint(N_FAMILIAR_POINTS - 1);  // find the nearest point of the ones the ant recognizes
-        velocity = rotate(velocity, theta);  // ant does a 180 turn
     }
     else if (energy < energyLowLimit || hasFood) {
         sf::Vector2f point = familiarPoints[destinationPointIndex];  // the point used for navigation
@@ -62,11 +61,6 @@ void Ant::setVelocity () {
             velocity = rotate(standardise(sf::Vector2f(
                 point.x - coordinates.x, point.y - coordinates.y
             )), theta);  // set velocity towards the point
-            // if (index == 942) {
-            //     std::cout << "INDEX: " << index << ", " << destinationPointIndex << ", " << deltaDistance << "\n";
-            //     std::cout << "942    " << "(" << coordinates.x << ", " << coordinates.y << ")" << "\n";
-            //     std::cout << "942    " << "(" << point.x << ", " << point.y << ")" << "\n";
-            // }
 
             if (deltaDistance <= familiarRadius * 0.1) {
                 // if close enough to point select next one, unless ant is already home
@@ -75,28 +69,24 @@ void Ant::setVelocity () {
             }
         }
         else {
-            // if (deltaDistance > familiarRadius * 2) {
-            //     destinationPointIndex = nearestPoint(N_FAMILIAR_POINTS - 1);  // search through all points
-            //
-            //     // if (index == 942) {
-            //     //     std::cout << index << ", " << destinationPointIndex << ", " << deltaDistance << "\n";
-            //     //     std::cout << "942    " << "(" << coordinates.x << ", " << coordinates.y << ")" << "\n";
-            //     //     std::cout << "942    " << "(" << point.x << ", " << point.y << ")" << "\n";
-            //     // }
-            // }
+
+            if (deltaDistance > familiarRadius) {
+                destinationPointIndex = nearestPoint(destinationPointIndex);  // search through all points
+            }
+
             velocity = rotate(velocity, theta);  // rotate movement by theta radians
+
         }
     }
 }
 
 void Ant::addFamiliarPoint () {
     for (unsigned int i = 0; i < N_FAMILIAR_POINTS; i++) {
-        if (distance(coordinates, familiarPoints[i]) <= familiarRadius * 0.75) {
-            // add points at a smallar radius than they can be found from
+        if (distance(coordinates, familiarPoints[i]) <= familiarRadius * 0.75) {  // add points at a smallar radius than they can be found from
             return;
         }
     }
-    for (unsigned int i = 0; i < N_FAMILIAR_POINTS; i++) {
+    for (unsigned int i = 0; i < N_FAMILIAR_POINTS; i++) {  // find first "open" familiar point
         if (familiarPoints[i].x == -1 && familiarPoints[i].y == -1) {
             familiarPoints[i] = coordinates;
             return;
@@ -108,19 +98,20 @@ int Ant::nearestPoint (int index) {
     // find the closest familiar point the ant knows, which is closer to the
     // nest than the currently selected point
 
-    float minDistance = 1024;  // arbitrarily big number
-    int minPoint = index;
+    float minDistance = distance(coordinates, familiarPoints[0]);  // arbitrarily big number
+    int minPoint = 0;
 
     for (int i = 0; i < index; i++) {
         if (familiarPoints[i].x != -1 && familiarPoints[i].y != -1) {
-            if (distance(coordinates, familiarPoints[i]) < minDistance) {
-                float minDistance = distance(coordinates, familiarPoints[i]);
+            if (distance(coordinates, familiarPoints[i]) <= minDistance) {
+                minDistance = distance(coordinates, familiarPoints[i]);
                 minPoint = i;
             }
         }
     }
     return minPoint;
 }
+
 
 void AntNest::init (sf::Vector2f center) {
     coordinates = center;

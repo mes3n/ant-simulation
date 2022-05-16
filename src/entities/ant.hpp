@@ -5,14 +5,14 @@
 #include <SFML/Graphics/CircleShape.hpp>
 
 
-const int ANT_POPULATION = 2000;
+const int ANT_POPULATION = 5000;
 const int N_FAMILIAR_POINTS = 30;
 
 class Ant {
     // the ants follow a set of simplified rules
     //  - they forage around chaotically looking for food
     //  - they must return to their nest to get energy and store food
-    //  - they can rembember their surroundings for later navigation
+    //  - they can rembember their surroundings for navigation
     private:
         int index;  // the ants "name"
 
@@ -28,18 +28,18 @@ class Ant {
         sf::Vector2f coordinates;
         sf::Vector2f velocity;
 
-        void setVelocity ();
+        void setVelocity ();  // set the ants velocity
 
-        void addFamiliarPoint ();
+        void addFamiliarPoint ();  // add a new familiar point if conditions are met
 
-        int nearestPoint (int);
+        int nearestPoint (int);  // get index of nearest familiar points to ant
 
     public:
         sf::CircleShape entity;  // the ants visual representation
 
         void init (sf::Vector2f, int);
 
-        void move (void);  // add delta time
+        void move (void);  //  - add delta time
 
 
 };
