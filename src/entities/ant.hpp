@@ -13,47 +13,47 @@ class Ant {
     //  - they forage around chaotically looking for food
     //  - they must return to their nest to get energy and store food
     //  - they can rembember their surroundings for navigation
-    private:
-        int index;  // the ants "name"
+    
+private:
+    int index;  // the ants "name"
 
-        int energy;  // make sure ant has enough energy to surive
-        int hasFood;  // if it is carrying food, head home and place phermones
+    int energy;  // make sure ant has enough energy to surive
+    int hasFood;  // if it is carrying food, head home and place phermones
 
-        // the ant uses familiarPoints to navigate home
-        sf::Vector2f familiarPoints[N_FAMILIAR_POINTS];  // points the ant recognizes
-        int destinationPointIndex;  // the point the ant is heading to
-        int familiarRadius;
+    // the ant uses familiarPoints to navigate home
+    sf::Vector2f familiarPoints[N_FAMILIAR_POINTS];  // points the ant recognizes
+    int destinationPointIndex;  // the point the ant is heading to
+    int familiarRadius;
 
-        // positional values of the ant
-        sf::Vector2f coordinates;
-        sf::Vector2f velocity;
+    // positional values of the ant
+    sf::Vector2f coordinates;
+    sf::Vector2f velocity;
 
-        void setVelocity ();  // set the ants velocity
+    void setVelocity ();  // set the ants velocity
 
-        void addFamiliarPoint ();  // add a new familiar point if conditions are met
+    void addFamiliarPoint ();  // add a new familiar point if conditions are met
 
-        int nearestPoint (int);  // get index of nearest familiar points to ant
+    int nearestPoint (int);  // get index of nearest familiar points to ant
 
-    public:
-        sf::CircleShape entity;  // the ants visual representation
+public:
+    sf::CircleShape entity;  // the ants visual representation
 
-        void init (sf::Vector2f, int);
+    void init (sf::Vector2f, int);
 
-        void move (void);  //  - add delta time
+    void move (void);  //  - add delta time
 
 
 };
 
 
 class AntNest {
-    private:
-        int radius;  // size of the actual ant home
+private:
+    sf::Vector2f coordinates;  // coordinates for the center of the home
 
-    public:
-        sf::Vector2f coordinates;  // coordinates for the center of the home
-        sf::CircleShape entity;  // the viua representation
+public:
+    sf::CircleShape entity;  // the viual representation
 
-        void init (sf::Vector2f);
+    void init (sf::Vector2f);
 };
 
 
@@ -62,7 +62,7 @@ extern Ant ants[ANT_POPULATION];
 extern AntNest antNest;
 
 
-namespace ANT {
+namespace ANTS {
 
     void init (sf::Vector2f);
 

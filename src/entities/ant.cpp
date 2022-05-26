@@ -21,8 +21,9 @@ void Ant::init (sf::Vector2f center, int i) {
     destinationPointIndex = N_FAMILIAR_POINTS - 1;  // end of familiarPoints
     familiarRadius = 75;
 
-    entity.setRadius(0.5);
-    entity.setPosition(coordinates.x - 3, coordinates.y - 3);
+    float radius = 1;
+    entity.setRadius(radius);
+    entity.setPosition(coordinates.x - radius, coordinates.y - radius);
     entity.setFillColor(sf::Color::Black);
 
 }
@@ -116,7 +117,7 @@ int Ant::nearestPoint (int index) {
 void AntNest::init (sf::Vector2f center) {
     coordinates = center;
 
-    radius = 10;  // the radius size of the nest itself
+    float radius = 10;  // the radius size of the nest itself
 
     entity.setRadius(radius);
     entity.setPosition(coordinates.x - radius, coordinates.y - radius);
@@ -126,7 +127,7 @@ void AntNest::init (sf::Vector2f center) {
 }
 
 
-void ANT::init (sf::Vector2f center) {  // initialize the antNest and the ants
+void ANTS::init (sf::Vector2f center) {  // initialize the antNest and the ants
     antNest.init(center);
 
     for (unsigned int i = 0; i < ANT_POPULATION; i++) {
@@ -135,7 +136,7 @@ void ANT::init (sf::Vector2f center) {  // initialize the antNest and the ants
 }
 
 
-void ANT::moveAnts (void) {  // move all ants
+void ANTS::moveAnts (void) {  // move all ants
 
     for (unsigned int i = 0; i < ANT_POPULATION; i++) {
         ants[i].move();
