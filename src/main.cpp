@@ -9,13 +9,13 @@ AntNest antNest;
 int main () {
 
     GUI::init();
-    ANT::init(sf::Vector2f(WIDTH/2, HEIGTH/2));
+    ANTS::init(sf::Vector2f(WIDTH/2, HEIGTH/2));
 
     while (window.isOpen()) {
 
         GUI::events();
 
-        ANT::moveAnts();
+        ANTS::moveAnts();
 
         GUI::update();
     }
