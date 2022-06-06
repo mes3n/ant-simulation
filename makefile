@@ -32,6 +32,4 @@ all: clean main
 .PHONY: clean
 clean:
 	rm -rf bin obj
-	mkdir bin
-	mkdir obj
-	mkdir obj/entities
+	mkdir bin obj obj/entities
