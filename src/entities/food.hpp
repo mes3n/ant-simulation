@@ -1,28 +1,33 @@
 #ifndef FOOD_H
 #define FOOD_H
 
-class Food {
-    // class for the food entities the ants will be looking for
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 
-private:
+#include <vector>
 
+const int FOOD_PER_BLOB = 100;
 
-public:
+typedef struct {
+    // food entities the ants will be looking for
 
+    int id;
+    int amount;
+
+    sf::Vector2f coordinates;
+    sf::CircleShape entity;
+    void decrement();
+
+} FoodPiece;
+
+extern std::vector<FoodPiece> food;
+
+namespace FOOD {
+
+    void place (sf::Vector2f);
+    FoodPiece * nearest (sf::Vector2f, sf::Vector2f*, float*);
 
 };
 
-
-class Phermone {
-    // class for phermones left by ants to mark their path 
-
-private:
-
-
-public:
-
-
-
-}
 
 #endif  // FOOD_H

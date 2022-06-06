@@ -2,8 +2,11 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Event.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 #include "graphics.hpp"
 #include "entities/ant.hpp"
+#include "entities/food.hpp"
 
 
 void GUI::init (void) {
@@ -25,27 +28,11 @@ void GUI::events () {
         if (event.type == sf::Event::Closed) window.close();
     }
 
-    // if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-    //     place_food(sf::Mouse::getPosition(window));
-
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        FOOD::place(sf::Vector2f(mousePos.x, mousePos.y));
+    }
 }
-
-
-// void place_food (sf::Vector2i position) {
-//     for (unsigned int i = 0; i < FOOD_COUNT; i++) {
-//         if (!food[i].entity.getPosition().x && !food[i].entity.getPosition().y || !food[i].exists) {
-//             food[i].entity.setPosition(sf::Vector2f(position));
-//
-//             food[i].entity.setFillColor(sf::Color(128, 128, 0));
-//             food[i].entity.setRadius(4);
-//
-//             food[i].coordinates = sf::Vector2f(position);
-//             food[i].exists = true;
-//
-//             return;
-//         }
-//     }
-// }
 
 void GUI::update (void) {
     window.clear(sf::Color::White);
@@ -63,6 +50,10 @@ void GUI::update (void) {
         window.draw(ants[i].entity);
     }
     window.draw(antNest.entity);
+
+    for (unsigned int i = 0; i < food.size(); i++) {
+        window.draw(food[i].entity);
+    }
 
     window.display();
 }
