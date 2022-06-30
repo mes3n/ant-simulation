@@ -6,13 +6,13 @@
 
 #include <vector>
 
-const int FOOD_PER_BLOB = 100;
+const int FOOD_PER_BLOB = 400;
 
 typedef struct {
     // food entities the ants will be looking for
 
-    int id;
     int amount;
+    int id;
 
     sf::Vector2f coordinates;
     sf::CircleShape entity;
@@ -25,7 +25,7 @@ extern std::vector<FoodPiece> food;
 namespace FOOD {
 
     void place (sf::Vector2f);
-    FoodPiece * nearest (sf::Vector2f, sf::Vector2f*, float*);
+    void nearest (sf::Vector2f, sf::Vector2f *, float *);
 
 };
 

@@ -7,6 +7,7 @@
 #include "graphics.hpp"
 #include "entities/ant.hpp"
 #include "entities/food.hpp"
+#include "entities/phermone.hpp"
 
 
 void GUI::init (void) {
@@ -37,23 +38,18 @@ void GUI::events () {
 void GUI::update (void) {
     window.clear(sf::Color::White);
 
-    // window.draw(antHome);
-    //
-    // for (unsigned int i = 0; i < POPULATION; i++) {
-    //     window.draw(ants[i].entity);
-    // }
-    //
-    // for (unsigned int i = 0; i < FOOD_COUNT; i++) {
-    //     if (food[i].exists) window.draw(food[i].entity);
-    // }
-    for (unsigned int i = 0; i < ANT_POPULATION; i++) {
-        window.draw(ants[i].entity);
+    for (Ant &ant : ants) {
+        window.draw(ant.entity);
     }
     window.draw(antNest.entity);
 
-    for (unsigned int i = 0; i < food.size(); i++) {
-        window.draw(food[i].entity);
+    for (FoodPiece &foodPiece : food) {
+        window.draw(foodPiece.entity);
     }
+
+    // for (Phermone &phermone : phermones) {
+    //     window.draw(phermone.entity);
+    // }
 
     window.display();
 }

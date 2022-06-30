@@ -12,43 +12,50 @@ void FoodPiece::decrement () {
 
 void FOOD::place (sf::Vector2f point) {
 
-    for (unsigned int i = 0; i < food.size(); i++) {
-        if (LOGIC::distance(food[i].coordinates, point) < 3) return;  // can't be placed less than 3 u away from another piece
+    for (FoodPiece foodPiece : food) {
+        if (LOGIC::nearby(foodPiece.coordinates, point, 6))
+            return;  // can't be placed less than 6 u away from another piece
     }
 
-    FoodPiece foodPiece;
+    FoodPiece piece;
 
-    foodPiece.coordinates = point;
-    foodPiece.amount = FOOD_PER_BLOB;
-    foodPiece.id = food.size();
+    piece.coordinates = point;
+    piece.amount = FOOD_PER_BLOB;
+    piece.id = food.size();
 
     float radius = 2;
-    foodPiece.entity.setRadius(radius);
-    foodPiece.entity.setPosition(point.x - radius, point.y - radius);
-    foodPiece.entity.setFillColor(sf::Color::Green);
-    foodPiece.entity.setOutlineColor(sf::Color::Black);  // color can change
-    foodPiece.entity.setOutlineThickness(0.5);
+    piece.entity.setRadius(radius);
+    piece.entity.setPosition(point.x - radius, point.y - radius);
+    piece.entity.setFillColor(sf::Color::Green);
+    piece.entity.setOutlineColor(sf::Color::Black);  // color can change
+    piece.entity.setOutlineThickness(0.5);
 
-    food.push_back(foodPiece);
+    food.push_back(piece);
+
 }
 
-FoodPiece * FOOD::nearest (sf::Vector2f coordinates, sf::Vector2f * point, float * pointDistance) {
-    // find the food piece closest to point
+void FOOD::nearest (sf::Vector2f coordinates, sf::Vector2f * point, float * pointDistance) {
+    // find the food piece closest to coordinates
+    // store food piece coordinates to point
+    // and the distance to point in pointDistance
 
     if (!food.size()) {
         *pointDistance = NAN;
-        return nullptr;
+        return;
     }
+
+    FoodPiece piece;
 
     *pointDistance = 4096;  // arbitrarily big number
-    int index = 0;
 
-    for (unsigned int i = 0; i < food.size(); i++) {
-        if (LOGIC::distance(coordinates, food[i].coordinates) <= *pointDistance) {
-            *pointDistance = LOGIC::distance(coordinates, food[i].coordinates);
-            *point = food[i].coordinates;
-            index = i;
+    for (FoodPiece &foodPiece : food) {
+        if (LOGIC::nearby(coordinates, foodPiece.coordinates, 75)) {
+            if (LOGIC::distance(coordinates, foodPiece.coordinates) <= *pointDistance) {
+                *pointDistance = LOGIC::distance(coordinates, foodPiece.coordinates);
+                *point = foodPiece.coordinates;
+                piece = foodPiece;
+            }
         }
     }
-    return &food[index];
+    piece.decrement();
 }

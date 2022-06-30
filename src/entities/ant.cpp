@@ -2,115 +2,161 @@
 #include "random.hpp"
 #include "../logic.hpp"
 
-#include <iostream>  // only used for testing atm
+#include "food.hpp"
+#include "phermone.hpp"
 
-void Ant::init (sf::Vector2f center, int i) {
-    index = i;
+
+void Ant::init (sf::Vector2f center, int index) {
+    id = index;
 
     coordinates = center;
-    float theta = rotation(generator) * 12;  // convert pi/12 to pi radians
+    float theta = rotation(generator) * 12;  // convert +-pi/12 to +-pi radians
     velocity = sf::Vector2f(cos(theta), sin(theta));
 
-    energy = 60 * 20;
+    energy = 60 * 20;  // 60 fps * 20 seconds
     hasFood = 0;
 
-    familiarPoints[0] = center;
-    for (unsigned int i = 1; i < N_FAMILIAR_POINTS; i++) {
-        familiarPoints[i] = sf::Vector2f(-1, -1);
-    }
-    destinationPointIndex = N_FAMILIAR_POINTS - 1;  // end of familiarPoints
-    familiarRadius = 75;
+    familiarPoints.push_back(center);
 
     float radius = 1;
     entity.setRadius(radius);
-    entity.setPosition(coordinates.x - radius, coordinates.y - radius);
+    entity.setPosition(center.x - radius, center.y - radius);
     entity.setFillColor(sf::Color::Black);
 
 }
 
 void Ant::move (void) {
 
-    if (energy) {
+    int energyLowLimit = 60 * 12;  // energy left when heading home (60 fps * seconds)
+    // float phermoneDirection = getPhermoneDirection();
 
-        setVelocity();
+    if (true) {
+        sf::Vector2f point;
+        float pointDistance;
+        bool foraging;
+
+        if (energy < energyLowLimit || hasFood) {
+            point = familiarPoints[destinationPointIndex];  // the point used for navigation
+            pointDistance = LOGIC::distance(coordinates, point);  // distance to said point
+            foraging = false;
+
+            if (hasFood) {
+                PHERM::place(coordinates);
+            }
+        }
+
+        else if (energy >= energyLowLimit) {
+            FOOD::nearest(coordinates, &point, &pointDistance);
+            foraging = true;
+
+            if (pointDistance < 1 && !hasFood) {  // looking for food and within 1 u of it (ant has found food)
+                hasFood = true;
+            }
+        }
+
+
+        setVelocity(point, pointDistance, foraging);
 
         coordinates += velocity;
-        energy -= 1;
-
-        addFamiliarPoint();
-
         entity.move(velocity);
 
+        energy -= 1;
+
+        if (LOGIC::nearby(coordinates, familiarPoints[0], 5)) {  // distance to home <= 5
+            familiarPoints.erase(familiarPoints.begin() + 1, familiarPoints.end());
+
+            float theta = rotation(generator) * 12;  // convert pi/12 to pi radians
+            velocity = sf::Vector2f(cos(theta), sin(theta));
+
+            hasFood = false;
+            energy = 60 * 20;
+        }
+
+        addFamiliarPoint();
     }
 }
 
-void Ant::setVelocity () {
+void Ant::setVelocity (sf::Vector2f point, float pointDistance, bool foraging) {
     float theta = rotation(generator);  // roatation between +-pi/12 radians
-    int energyLowLimit = 60 * 12;  // energy left when heading home (60 fps * seconds)
 
-    if (energy > energyLowLimit) {  // move around chaotically
-        velocity = rotate(velocity, theta);  // rotate movement by theta radians
+    // SET DIRECTION OF PHERMONE PATH NOW...
+    // getPhermoneDirection();
+
+    if (pointDistance <= FAMILIAR_RADIUS) {  // if close enough to be familiar to specific point
+        velocity = LOGIC::rotate(LOGIC::standardise(sf::Vector2f(
+            point.x - coordinates.x, point.y - coordinates.y
+        )), theta);  // set velocity towards the point
     }
-    else if (energy == energyLowLimit) {  // start moving home
-        destinationPointIndex = nearestPoint(N_FAMILIAR_POINTS - 1);  // find the nearest point of the ones the ant recognizes
+    else {
+
+        velocity = LOGIC::rotate(velocity, theta);  // rotate movement by theta radians
+
     }
-    else if (energy < energyLowLimit || hasFood) {
-        sf::Vector2f point = familiarPoints[destinationPointIndex];  // the point used for navigation
-        float deltaDistance = distance(coordinates, point);  // distance to said point
 
-        if (deltaDistance <= familiarRadius) {  // if close enough to be familiar
-            velocity = rotate(standardise(sf::Vector2f(
-                point.x - coordinates.x, point.y - coordinates.y
-            )), theta);  // set velocity towards the point
 
-            if (deltaDistance <= familiarRadius * 0.1) {
-                // if close enough to point select next one, unless ant is already home
-                if (destinationPointIndex > 0)
-                    destinationPointIndex -= 1;
-            }
+    if (!foraging) {  // navigating home
+
+        if (pointDistance <= FAMILIAR_RADIUS * 0.1) {  // if close enough to point select next one, unless ant is already home
+            if (destinationPointIndex > 0)
+                destinationPointIndex -= 1;
         }
-        else {
 
-            if (deltaDistance > familiarRadius) {
-                destinationPointIndex = nearestPoint(destinationPointIndex);  // search through all points
-            }
-
-            velocity = rotate(velocity, theta);  // rotate movement by theta radians
-
+        else if (pointDistance > FAMILIAR_RADIUS) {
+            destinationPointIndex = nearestPoint(destinationPointIndex);  // search through all points closer then currently selected
         }
     }
 }
 
 void Ant::addFamiliarPoint () {
-    for (unsigned int i = 0; i < N_FAMILIAR_POINTS; i++) {
-        if (distance(coordinates, familiarPoints[i]) <= familiarRadius * 0.75) {  // add points at a smallar radius than they can be found from
+    for (sf::Vector2f &familiarPoint : familiarPoints) {
+        if (LOGIC::distance(coordinates, familiarPoint) <= FAMILIAR_RADIUS * 0.75) {  // add points at a smallar radius than they can be found from
             return;
         }
     }
-    for (unsigned int i = 0; i < N_FAMILIAR_POINTS; i++) {  // find first "open" familiar point
-        if (familiarPoints[i].x == -1 && familiarPoints[i].y == -1) {
-            familiarPoints[i] = coordinates;
-            return;
-        }
-    }
+    destinationPointIndex = familiarPoints.size();  // find the nearest point of the ones the ant recognizes
+    familiarPoints.push_back(coordinates);
 }
 
 int Ant::nearestPoint (int index) {
     // find the closest familiar point the ant knows, which is closer to the
     // nest than the currently selected point
 
-    float minDistance = distance(coordinates, familiarPoints[0]);  // arbitrarily big number
-    int minPoint = 0;
+    float minDistance = 4096;  // arbitrarily big number
+    int minIndex = 0;
 
     for (int i = 0; i < index; i++) {
-        if (familiarPoints[i].x != -1 && familiarPoints[i].y != -1) {
-            if (distance(coordinates, familiarPoints[i]) <= minDistance) {
-                minDistance = distance(coordinates, familiarPoints[i]);
-                minPoint = i;
-            }
+        if (LOGIC::distance(coordinates, familiarPoints[i]) <= minDistance) {
+            minDistance = LOGIC::distance(coordinates, familiarPoints[i]);
+            minIndex = i;
         }
     }
-    return minPoint;
+    return minIndex;
+}
+
+float Ant::getPhermoneDirection () {  // draw straight lines and count phermones close to the line
+
+    int maxPhermoneCount = 0;
+    float maxPhermoneAngle = 0;
+
+    for (float theta = -M_PI; theta < M_PI; theta += M_PI * 0.125) {
+        int phermoneCount = 0;
+        for (float r = FAMILIAR_RADIUS * 0.1; r < FAMILIAR_RADIUS; r += FAMILIAR_RADIUS * 0.1) {
+            sf::Vector2f point(coordinates.x + r*cos(theta), coordinates.y + r*sin(theta));
+
+            for (Phermone &phermone : phermones) {
+                if (LOGIC::distance(point, phermone.coordinates) < 10) {
+                    phermoneCount += phermone.strenght;
+                }
+            }
+        }
+        if (phermoneCount > maxPhermoneCount) {
+            maxPhermoneCount = phermoneCount;
+            maxPhermoneAngle = theta;
+        }
+    }
+
+    return maxPhermoneCount ? maxPhermoneAngle : NAN;
+
 }
 
 
@@ -120,10 +166,10 @@ void AntNest::init (sf::Vector2f center) {
     float radius = 10;  // the radius size of the nest itself
 
     entity.setRadius(radius);
-    entity.setPosition(coordinates.x - radius, coordinates.y - radius);
+    entity.setPosition(center.x - radius, center.y - radius);
     entity.setFillColor(sf::Color::Cyan);
-    // entity.setOutlineColor(sf::Color::Cyan);  // color can change
-    // entity.setOutlineThickness(3);
+    entity.setOutlineColor(sf::Color::Black);  // color can change
+    entity.setOutlineThickness(0.5);
 }
 
 
@@ -138,7 +184,9 @@ void ANTS::init (sf::Vector2f center) {  // initialize the antNest and the ants
 
 void ANTS::moveAnts (void) {  // move all ants
 
-    for (unsigned int i = 0; i < ANT_POPULATION; i++) {
-        ants[i].move();
+    for (Ant &ant : ants) {
+        ant.move();
     }
+    PHERM::decrementAll();
+
 }
