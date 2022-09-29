@@ -6,26 +6,25 @@
 
 #include <vector>
 
-const int FOOD_PER_BLOB = 400;
+#define FOOD_PER_BLOB 400
 
 typedef struct {
-    // food entities the ants will be looking for
-
     int amount;
-    int id;
+    sf::Vector2f position;
 
-    sf::Vector2f coordinates;
     sf::CircleShape entity;
-    void decrement();
 
 } FoodPiece;
 
-extern std::vector<FoodPiece> food;
+class Food : public sf::Drawable {
+    private: 
+        virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+        std::vector<FoodPiece> foodPieces;
 
-namespace FOOD {
-
-    void place (sf::Vector2f);
-    void nearest (sf::Vector2f, sf::Vector2f *, float *);
+    public:
+        void place (sf::Vector2f coordinates);
+        void nearest (sf::Vector2f coordinates, sf::Vector2f* n_coordinates, float* n_distance) const;
+        void decay (void);
 
 };
 

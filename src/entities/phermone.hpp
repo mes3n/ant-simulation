@@ -6,28 +6,22 @@
 
 #include <vector>
 
-const int PHERMONE_STRENGHT = 5;
+#define PHERMONE_STRENGHT 5
 
-typedef struct {
-    // food entities the ants will be looking for
-
-    int id;
+typedef struct {  // food entities the ants will be looking for
     int strenght;
-
     sf::Vector2f coordinates;
     // sf::CircleShape entity;  // in case of wanting visuals
 
-    void decrement();
-
 } Phermone;
 
-extern std::vector<Phermone> phermones;
 
-namespace PHERM {
+class Phermones {
+    public:
+        std::vector<Phermone> phermones;
 
-    void place (sf::Vector2f);
-
-    void decrementAll ();
+        void place (sf::Vector2f);
+        void decay (void);
 
 };
 

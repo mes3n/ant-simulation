@@ -4,52 +4,46 @@
 
 #include <SFML/System/Vector2.hpp>
 
+#include <string>
+
 #include "graphics.hpp"
 #include "entities/ant.hpp"
 #include "entities/food.hpp"
 #include "entities/phermone.hpp"
 
 
-void GUI::init (void) {
-    sf::ContextSettings settings;
-    settings.antialiasingLevel = 8;
+Window::Window (const int width, const int height, const std::string &title) 
+: sf::RenderWindow(sf::VideoMode(width, height), title) {
 
-    window.create(sf::VideoMode(WIDTH, HEIGTH), "ant simulation", sf::Style::Close, settings);
-    window.setFramerateLimit(60);
-
+    setFramerateLimit(120);
 }
 
+void Window::events (Food& food) {
 
-void GUI::events () {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-        window.close();
+        close();
 
     sf::Event event;
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed) window.close();
+    while (pollEvent(event)) {
+        if (event.type == sf::Event::Closed) close();
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-        FOOD::place(sf::Vector2f(mousePos.x, mousePos.y));
+        sf::Vector2i mousePos = sf::Mouse::getPosition(*this);
+        food.place(sf::Vector2f(mousePos.x, mousePos.y));
     }
 }
 
-void GUI::update (void) {
-    window.clear(sf::Color::White);
+void Window::render (AntNest antNest, AntColony antColony, Food food) {
+    clear(sf::Color::White);
 
-    for (Ant &ant : ants) {
-        window.draw(ant.entity);
-    }
-    window.draw(antNest.entity);
-
-    for (FoodPiece &foodPiece : food) {
-        window.draw(foodPiece.entity);
-    }
+    draw(antColony);
+    draw(antNest);
+    draw(food);
 
     // for (Phermone &phermone : phermones) {
     //     window.draw(phermone.entity);
     // }
 
-    window.display();
+    display();
 }

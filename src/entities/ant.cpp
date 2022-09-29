@@ -5,27 +5,47 @@
 #include "food.hpp"
 #include "phermone.hpp"
 
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 
-void Ant::init (sf::Vector2f center, int index) {
+
+AntNest::AntNest (int x, int y) {
+    position = sf::Vector2f(static_cast<float>(x), static_cast<float>(y));
+
+    float radius = 10.0f;  // the radius size of the nest itself
+
+    entity.setRadius(radius);
+    entity.setPosition(position.x - radius, position.y - radius);
+    entity.setFillColor(sf::Color::Cyan);
+    entity.setOutlineColor(sf::Color::Black);  // color can change
+    entity.setOutlineThickness(0.5f);
+}
+
+void AntNest::draw (sf::RenderTarget &target, sf::RenderStates states) const {
+    target.draw(entity, states);
+}
+
+
+Ant::Ant (sf::Vector2f coordinates, int index) {
     id = index;
 
-    coordinates = center;
+    position = coordinates;
     float theta = rotation(generator) * 12;  // convert +-pi/12 to +-pi radians
     velocity = sf::Vector2f(cos(theta), sin(theta));
 
     energy = 60 * 20;  // 60 fps * 20 seconds
     hasFood = 0;
 
-    familiarPoints.push_back(center);
+    familiarPoints.push_back(position);
 
     float radius = 1;
     entity.setRadius(radius);
-    entity.setPosition(center.x - radius, center.y - radius);
+    entity.setPosition(position.x - radius, position.y - radius);
     entity.setFillColor(sf::Color::Black);
 
 }
 
-void Ant::move (void) {
+void Ant::move (Phermones phermones, Food food) {
 
     int energyLowLimit = 60 * 12;  // energy left when heading home (60 fps * seconds)
     // float phermoneDirection = getPhermoneDirection();
@@ -37,16 +57,16 @@ void Ant::move (void) {
 
         if (energy < energyLowLimit || hasFood) {
             point = familiarPoints[destinationPointIndex];  // the point used for navigation
-            pointDistance = LOGIC::distance(coordinates, point);  // distance to said point
+            pointDistance = LOGIC::distance(position, point);  // distance to said point
             foraging = false;
 
             if (hasFood) {
-                PHERM::place(coordinates);
+                phermones.place(position);
             }
         }
 
         else if (energy >= energyLowLimit) {
-            FOOD::nearest(coordinates, &point, &pointDistance);
+            food.nearest(position, &point, &pointDistance);
             foraging = true;
 
             if (pointDistance < 1 && !hasFood) {  // looking for food and within 1 u of it (ant has found food)
@@ -57,12 +77,12 @@ void Ant::move (void) {
 
         setVelocity(point, pointDistance, foraging);
 
-        coordinates += velocity;
+        position += velocity;
         entity.move(velocity);
 
         energy -= 1;
 
-        if (LOGIC::nearby(coordinates, familiarPoints[0], 5)) {  // distance to home <= 5
+        if (LOGIC::nearby(position, familiarPoints[0], 5)) {  // distance to home <= 5
             familiarPoints.erase(familiarPoints.begin() + 1, familiarPoints.end());
 
             float theta = rotation(generator) * 12;  // convert pi/12 to pi radians
@@ -73,6 +93,8 @@ void Ant::move (void) {
         }
 
         addFamiliarPoint();
+        if (id == 0) printf("%f, %f\n", position.x, position.y);
+
     }
 }
 
@@ -84,7 +106,7 @@ void Ant::setVelocity (sf::Vector2f point, float pointDistance, bool foraging) {
 
     if (pointDistance <= FAMILIAR_RADIUS) {  // if close enough to be familiar to specific point
         velocity = LOGIC::rotate(LOGIC::standardise(sf::Vector2f(
-            point.x - coordinates.x, point.y - coordinates.y
+            point.x - position.x, point.y - position.y
         )), theta);  // set velocity towards the point
     }
     else {
@@ -109,84 +131,73 @@ void Ant::setVelocity (sf::Vector2f point, float pointDistance, bool foraging) {
 
 void Ant::addFamiliarPoint () {
     for (sf::Vector2f &familiarPoint : familiarPoints) {
-        if (LOGIC::distance(coordinates, familiarPoint) <= FAMILIAR_RADIUS * 0.75) {  // add points at a smallar radius than they can be found from
+        if (LOGIC::distance(position, familiarPoint) <= FAMILIAR_RADIUS * 0.75) {  // add points at a smallar radius than they can be found from
             return;
         }
     }
     destinationPointIndex = familiarPoints.size();  // find the nearest point of the ones the ant recognizes
-    familiarPoints.push_back(coordinates);
+    familiarPoints.push_back(position);
 }
 
 int Ant::nearestPoint (int index) {
     // find the closest familiar point the ant knows, which is closer to the
     // nest than the currently selected point
 
-    float minDistance = 4096;  // arbitrarily big number
+    float minDistance = LOGIC::distance(position, familiarPoints[0]);;  // arbitrarily big number
     int minIndex = 0;
 
-    for (int i = 0; i < index; i++) {
-        if (LOGIC::distance(coordinates, familiarPoints[i]) <= minDistance) {
-            minDistance = LOGIC::distance(coordinates, familiarPoints[i]);
+    for (int i = 1; i < index; i++) {
+        if (LOGIC::distance(position, familiarPoints[i]) <= minDistance) {
+            minDistance = LOGIC::distance(position, familiarPoints[i]);
             minIndex = i;
         }
     }
     return minIndex;
 }
 
-float Ant::getPhermoneDirection () {  // draw straight lines and count phermones close to the line
+float Ant::getPhermoneDirection (Phermones phermones) {  // draw straight lines and count phermones close to the line
 
-    int maxPhermoneCount = 0;
-    float maxPhermoneAngle = 0;
+    // int maxPhermoneCount = 0;
+    // float maxPhermoneAngle = 0;
 
-    for (float theta = -M_PI; theta < M_PI; theta += M_PI * 0.125) {
-        int phermoneCount = 0;
-        for (float r = FAMILIAR_RADIUS * 0.1; r < FAMILIAR_RADIUS; r += FAMILIAR_RADIUS * 0.1) {
-            sf::Vector2f point(coordinates.x + r*cos(theta), coordinates.y + r*sin(theta));
+    // for (float theta = -M_PI; theta < M_PI; theta += M_PI * 0.125) {
+    //     int phermoneCount = 0;
+    //     for (float r = FAMILIAR_RADIUS * 0.1; r < FAMILIAR_RADIUS; r += FAMILIAR_RADIUS * 0.1) {
+    //         sf::Vector2f point(position.x + r*cos(theta), position.y + r*sin(theta));
 
-            for (Phermone &phermone : phermones) {
-                if (LOGIC::distance(point, phermone.coordinates) < 10) {
-                    phermoneCount += phermone.strenght;
-                }
-            }
-        }
-        if (phermoneCount > maxPhermoneCount) {
-            maxPhermoneCount = phermoneCount;
-            maxPhermoneAngle = theta;
-        }
-    }
+    //         for (Phermone phermone: phermones) {
+    //             if (LOGIC::distance(point, phermone.coordinates) < 10) {
+    //                 phermoneCount += phermone.strenght;
+    //             }
+    //         }
+    //     }
+    //     if (phermoneCount > maxPhermoneCount) {
+    //         maxPhermoneCount = phermoneCount;
+    //         maxPhermoneAngle = theta;
+    //     }
+    // }
 
-    return maxPhermoneCount ? maxPhermoneAngle : NAN;
+    // return maxPhermoneCount ? maxPhermoneAngle : NAN;
 
 }
 
 
-void AntNest::init (sf::Vector2f center) {
-    coordinates = center;
+AntColony::AntColony (AntNest nest, int population_size) {
+    home = nest.position;
 
-    float radius = 10;  // the radius size of the nest itself
-
-    entity.setRadius(radius);
-    entity.setPosition(center.x - radius, center.y - radius);
-    entity.setFillColor(sf::Color::Cyan);
-    entity.setOutlineColor(sf::Color::Black);  // color can change
-    entity.setOutlineThickness(0.5);
-}
-
-
-void ANTS::init (sf::Vector2f center) {  // initialize the antNest and the ants
-    antNest.init(center);
-
-    for (unsigned int i = 0; i < ANT_POPULATION; i++) {
-        ants[i].init(center, i);
+    for (int i = 0; i < population_size; i++) {
+        ants.push_back(Ant(home, i));
     }
 }
 
-
-void ANTS::moveAnts (void) {  // move all ants
-
-    for (Ant &ant : ants) {
-        ant.move();
+void AntColony::update (Phermones phermones, Food food) {
+    for (Ant ant: ants) {
+        ant.move(phermones, food);
     }
-    PHERM::decrementAll();
+}
 
+void AntColony::draw (sf::RenderTarget &target, sf::RenderStates states) const {
+    for (Ant ant: ants) {
+        target.draw(ant.entity, states);
+    }
 }

@@ -2,20 +2,16 @@
 #define GRAPHICS_H
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include "entities/ant.hpp"
+#include "entities/food.hpp"
 
+class Window : public sf::RenderWindow {
+    public:
+        Window (const int width, const int height, const std::string &title);
 
-const int WIDTH = 1000;
-const int HEIGTH = 1000;
+        void events (Food& food);
+        void render (AntNest antNest, AntColony antColony, Food food);
 
-extern sf::RenderWindow window;
-
-namespace GUI {
-
-    void init(void);
-
-    void events(void);
-
-    void update(void);
 };
 
 

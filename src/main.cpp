@@ -4,27 +4,24 @@
 #include "entities/phermone.hpp"
 
 
-sf::RenderWindow window;
-
-std::vector<Ant> ants(ANT_POPULATION);
-AntNest antNest;
-
-std::vector<Phermone> phermones;
-std::vector<FoodPiece> food;
-
-
 int main (int argc, char** argv) {
 
-    GUI::init();
-    ANTS::init(sf::Vector2f(WIDTH/2, HEIGTH/2));
+    const int width = 1000, height = 1000; 
+    Window window(width, height, "Ant Simulation");
+
+    AntNest antNest(width / 2, height / 2);
+    AntColony antColony(antNest, ANT_POPULATION);
+
+    Phermones phermones;
+    Food food;
 
     while (window.isOpen()) {
 
-        GUI::events();
+        window.events(food);
 
-        ANTS::moveAnts();
+        antColony.update(phermones, food);
 
-        GUI::update();
+        window.render(antNest, antColony, food);
 
     }
 

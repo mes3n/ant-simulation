@@ -1,18 +1,21 @@
 #include "phermone.hpp"
 #include "../logic.hpp"
 
-void Phermone::decrement () {
-    strenght *= 0.7;
+void Phermones::decay () {
+    auto it = phermones.begin();
+    for ( ; it != phermones.end(); it++) {
+        it->strenght *= 0.7f;
 
-    if (strenght <= 1) {
-        phermones.erase(phermones.begin() + id);
+        if (it->strenght <= 1) {
+            phermones.erase(it--);
+        }
     }
 }
 
 
-void PHERM::place (sf::Vector2f point) {
+void Phermones::place (sf::Vector2f point) {
 
-    for (Phermone &phermone : phermones) {
+    for (Phermone phermone : phermones) {
         if (LOGIC::nearby(phermone.coordinates, point, 12)) {  // clump together phermones that are close to each other
             phermone.strenght += PHERMONE_STRENGHT;
             return;
@@ -23,7 +26,6 @@ void PHERM::place (sf::Vector2f point) {
 
     phermone.coordinates = point;
     phermone.strenght = PHERMONE_STRENGHT;
-    phermone.id = phermones.size();
 
     // float radius = 2;
     // phermone.entity.setRadius(radius);
@@ -33,10 +35,4 @@ void PHERM::place (sf::Vector2f point) {
     // phermone.entity.setOutlineThickness(0.5);
 
     phermones.push_back(phermone);
-}
-
-void PHERM::decrementAll () {
-    for (Phermone &phermone : phermones) {
-        phermone.decrement();
-    }
 }
