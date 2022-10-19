@@ -10,7 +10,7 @@ class Window : public sf::RenderWindow {
         Window (const int width, const int height, const std::string &title);
 
         void events (Food& food);
-        void render (AntNest antNest, AntColony antColony, Food food);
+        void render (const AntNest& antNest, const AntColony& antColony, const Food& food);
 
 };
 

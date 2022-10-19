@@ -34,12 +34,13 @@ void Window::events (Food& food) {
     }
 }
 
-void Window::render (AntNest antNest, AntColony antColony, Food food) {
+void Window::render (const AntNest& antNest, const AntColony& antColony, const Food& food) {
     clear(sf::Color::White);
+
+    draw(food);
 
     draw(antColony);
     draw(antNest);
-    draw(food);
 
     // for (Phermone &phermone : phermones) {
     //     window.draw(phermone.entity);
