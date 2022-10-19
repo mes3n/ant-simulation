@@ -17,7 +17,7 @@
 class AntNest : public sf::Drawable {
     // class for the ants nest, simply a visual start for the ants
     private:
-        virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+        virtual void draw (sf::RenderTarget &target, sf::RenderStates states) const;
 
     public:
         sf::Vector2f position;  // coordinates for the center of the home
@@ -50,14 +50,14 @@ class Ant {
         void setVelocity (sf::Vector2f, float, bool);  // set the ants velocity
         void addFamiliarPoint ();  // add a new familiar point if conditions are met
         int nearestPoint (int);  // get index of nearest familiar points to ant
-        float getPhermoneDirection (Phermones phermones);  //  get the direction which has the most phermones
+        float getPhermoneDirection (const Phermones& phermones);  //  get the direction which has the most phermones
 
     public:
         sf::CircleShape entity;
 
-        Ant(sf::Vector2f, int index);
+        Ant(sf::Vector2f coordinates, int index);
 
-        void move (Phermones phermones, Food food);  //  - add delta time
+        void move (Phermones& phermones, const Food& food);  //  - add delta time
 
 };
 
@@ -69,8 +69,8 @@ class AntColony : public sf::Drawable {
         virtual void draw (sf::RenderTarget &target, sf::RenderStates states) const;
 
     public:
-        AntColony(AntNest nest, int population_size);
-        void update (Phermones phermones, Food food);
+        AntColony(const AntNest& nest, int population_size);
+        void update (Phermones& phermones, const Food& food);
 };
 
 
