@@ -17,8 +17,8 @@ AntNest::AntNest (int x, int y) {
     entity.setRadius(radius);
     entity.setPosition(position.x - radius, position.y - radius);
     entity.setFillColor(sf::Color::Cyan);
-    entity.setOutlineColor(sf::Color::Black);  // color can change
-    entity.setOutlineThickness(0.5f);
+    // entity.setOutlineColor(sf::Color::Black);  // color can change
+    // entity.setOutlineThickness(0.5f);
 }
 
 void AntNest::draw (sf::RenderTarget &target, sf::RenderStates states) const {
@@ -38,14 +38,14 @@ Ant::Ant (sf::Vector2f coordinates, int index) {
 
     familiarPoints.push_back(position);
 
-    float radius = 1;
+    float radius = 1.0f;
     entity.setRadius(radius);
     entity.setPosition(position.x - radius, position.y - radius);
     entity.setFillColor(sf::Color::Black);
 
 }
 
-void Ant::move (Phermones phermones, Food food) {
+void Ant::move (Phermones& phermones, const Food& food) {
 
     int energyLowLimit = 60 * 12;  // energy left when heading home (60 fps * seconds)
     // float phermoneDirection = getPhermoneDirection();
@@ -65,7 +65,7 @@ void Ant::move (Phermones phermones, Food food) {
             }
         }
 
-        else if (energy >= energyLowLimit) {
+        else if (energy >= energyLowLimit) {  // ant is looking for food
             food.nearest(position, &point, &pointDistance);
             foraging = true;
 
@@ -78,22 +78,24 @@ void Ant::move (Phermones phermones, Food food) {
         setVelocity(point, pointDistance, foraging);
 
         position += velocity;
-        entity.move(velocity);
+        entity.setPosition(position);
 
         energy -= 1;
 
-        if (LOGIC::nearby(position, familiarPoints[0], 5)) {  // distance to home <= 5
+        if (LOGIC::nearby(position, familiarPoints[0], 5)) {  // distance to home <= 5 (ant is home)
             familiarPoints.erase(familiarPoints.begin() + 1, familiarPoints.end());
 
-            float theta = rotation(generator) * 12;  // convert pi/12 to pi radians
+            float theta = rotation(generator) * 12;  // get random direction to head in
             velocity = sf::Vector2f(cos(theta), sin(theta));
 
             hasFood = false;
             energy = 60 * 20;
         }
 
-        addFamiliarPoint();
-        if (id == 0) printf("%f, %f\n", position.x, position.y);
+        addFamiliarPoint();  // and checks if it should add a refernce point
+        // if (1) printf("%d: %f, %f\n", id, velocity.x, velocity.y);
+        // if (1) printf("%d: %f, %f\n", id, position.x, position.y);
+        // if (1) printf("%d: %f, %f\n", id, this->entity.getPosition().x, this->entity.getPosition().y);
 
     }
 }
@@ -155,7 +157,7 @@ int Ant::nearestPoint (int index) {
     return minIndex;
 }
 
-float Ant::getPhermoneDirection (Phermones phermones) {  // draw straight lines and count phermones close to the line
+float Ant::getPhermoneDirection (const Phermones& phermones) {  // draw straight lines and count phermones close to the line
 
     // int maxPhermoneCount = 0;
     // float maxPhermoneAngle = 0;
@@ -182,7 +184,7 @@ float Ant::getPhermoneDirection (Phermones phermones) {  // draw straight lines 
 }
 
 
-AntColony::AntColony (AntNest nest, int population_size) {
+AntColony::AntColony (const AntNest& nest, int population_size) {
     home = nest.position;
 
     for (int i = 0; i < population_size; i++) {
@@ -190,14 +192,14 @@ AntColony::AntColony (AntNest nest, int population_size) {
     }
 }
 
-void AntColony::update (Phermones phermones, Food food) {
-    for (Ant ant: ants) {
+void AntColony::update (Phermones& phermones, const Food& food) {
+    for (Ant& ant: ants) {  // FUCKING C++ REFERENCES
         ant.move(phermones, food);
     }
 }
 
 void AntColony::draw (sf::RenderTarget &target, sf::RenderStates states) const {
-    for (Ant ant: ants) {
+    for (const Ant& ant: ants) {
         target.draw(ant.entity, states);
     }
 }
