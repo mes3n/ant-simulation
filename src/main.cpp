@@ -9,8 +9,8 @@ int main (int argc, char** argv) {
     const int width = 1000, height = 1000; 
     Window window(width, height, "Ant Simulation");
 
-    AntNest antNest(width / 2, height / 2);
-    AntColony antColony(antNest, ANT_POPULATION);
+    AntNest antNest(500, 500);
+    AntColony antColony(antNest, 1000);
 
     Phermones phermones;
     Food food;
